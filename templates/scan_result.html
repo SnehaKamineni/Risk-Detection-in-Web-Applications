@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Security Report | WebShield
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+
+<body>
+
+<!-- NAVBAR -->
+
+<nav class="navbar">
+
+    <a href="/" class="brand brand-link">
+
+        <div class="brand-icon">
+            S
+        </div>
+
+        <div>
+            <h2>WebShield</h2>
+
+            <span>
+                Security Intelligence
+            </span>
+        </div>
+
+    </a>
+
+
+    <a href="/" class="new-scan-btn">
+        ← New Scan
+    </a>
+
+</nav>
+
+
+
+<main class="results-container">
+
+
+    <!-- REPORT HEADER -->
+
+    <section class="result-header">
+
+        <div>
+
+            <p class="small-heading">
+                SECURITY ASSESSMENT REPORT
+            </p>
+
+            <h1>
+                Scan Results
+            </h1>
+
+            <p class="target-url">
+
+                Target:
+
+                <span>
+                    {{ url }}
+                </span>
+
+            </p>
+
+        </div>
+
+
+        <div class="scan-complete">
+
+            ✓ Scan Complete
+
+        </div>
+
+    </section>
+
+
+
+    <!-- SUMMARY -->
+
+    <section class="summary-grid">
+
+        <div class="summary-card">
+
+            <p>
+                TOTAL FINDINGS
+            </p>
+
+            <h2>
+                {{ total_alerts }}
+            </h2>
+
+        </div>
+
+
+        <div class="summary-card high-card">
+
+            <p>
+                HIGH RISK
+            </p>
+
+            <h2>
+                {{ high_count }}
+            </h2>
+
+        </div>
+
+
+        <div class="summary-card medium-card">
+
+            <p>
+                MEDIUM RISK
+            </p>
+
+            <h2>
+                {{ medium_count }}
+            </h2>
+
+        </div>
+
+
+        <div class="summary-card low-card">
+
+            <p>
+                LOW RISK
+            </p>
+
+            <h2>
+                {{ low_count }}
+            </h2>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ZAP SCAN INFO -->
+
+    <section class="scan-details">
+
+        <div>
+
+            <span>
+                Scanner
+            </span>
+
+            <strong>
+                OWASP ZAP
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span>
+                Version
+            </span>
+
+            <strong>
+                {{ zap_version }}
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span>
+                Status
+            </span>
+
+            <strong class="status-success">
+                Completed
+            </strong>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ZAP ALERT SECTION -->
+
+    <section class="findings-section">
+
+
+        <div class="findings-title">
+
+            <div>
+
+                <p class="small-heading">
+                    DETECTED SECURITY ISSUE
+                </p>
+
+                <h2>
+                    Vulnerability Details
+                </h2>
+
+            </div>
+
+
+            {% if alerts %}
+
+            <div class="finding-count">
+
+                <span id="currentAlert">
+                    1
+                </span>
+
+                /
+
+                {{ total_alerts }}
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+
+
+        {% if alerts %}
+
+
+        <div id="alertsContainer">
+
+            {% for alert in alerts %}
+
+
+            <article
+                class="vulnerability-card alert-card"
+                {% if not loop.first %}
+                style="display:none;"
+                {% endif %}
+            >
+
+
+                <div class="vulnerability-top">
+
+
+                    <div>
+
+                        <span
+                            class="risk-badge risk-{{ alert['risk']|lower }}"
+                        >
+
+                            {{ alert["risk"] }} Risk
+
+                        </span>
+
+
+                        <h3>
+
+                            {{ alert["alert"] }}
+
+                        </h3>
+
+                    </div>
+
+
+                    <div class="finding-number">
+
+                        Alert #{{ loop.index }}
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- AFFECTED URL -->
+
+                <div class="affected-url">
+
+                    <span>
+                        AFFECTED URL
+                    </span>
+
+                    <p>
+                        {{ alert["url"] }}
+                    </p>
+
+                </div>
+
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="single-finding-block">
+
+                    <h4>
+                        Vulnerability Description
+                    </h4>
+
+                    <p>
+
+                        {{ alert.get(
+                            "description",
+                            "No description available."
+                        ) }}
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- SOLUTION -->
+
+                <div class="single-finding-block solution-single">
+
+                    <h4>
+                        Recommended Solution
+                    </h4>
+
+                    <p>
+
+                        {{ alert.get(
+                            "solution",
+                            "No remediation guidance available."
+                        ) }}
+
+                    </p>
+
+                </div>
+
+
+            </article>
+
+
+            {% endfor %}
+
+        </div>
+
+
+
+        <!-- ALERT NAVIGATION -->
+
+        <div class="alert-navigation">
+
+            <button
+                id="previousButton"
+                class="alert-nav-btn"
+                onclick="previousAlert()"
+                disabled
+            >
+
+                ← Previous Alert
+
+            </button>
+
+
+            <button
+                id="nextButton"
+                class="alert-nav-btn next-alert-btn"
+                onclick="nextAlert()"
+            >
+
+                Next Alert →
+
+            </button>
+
+        </div>
+
+
+        {% else %}
+
+
+        <div class="no-findings">
+
+            <div>
+                ✓
+            </div>
+
+            <h2>
+                No vulnerabilities detected
+            </h2>
+
+            <p>
+
+                OWASP ZAP did not report any
+                vulnerabilities for this target.
+
+            </p>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- ================================================= -->
+    <!-- NMAP NETWORK SCAN SECTION -->
+    <!-- ================================================= -->
+
+    <section class="findings-section nmap-section">
+
+
+        <div class="findings-title">
+
+            <div>
+
+                <p class="small-heading">
+                    NETWORK SECURITY ANALYSIS
+                </p>
+
+                <h2>
+                    Network & Service Scan
+                </h2>
+
+            </div>
+
+
+            <div class="finding-count">
+
+                {{ total_ports }}
+
+                {% if total_ports == 1 %}
+                    Port
+                {% else %}
+                    Ports
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+
+        <!-- NMAP SCANNER INFORMATION -->
+
+        <section class="scan-details">
+
+            <div>
+
+                <span>
+                    Scanner
+                </span>
+
+                <strong>
+                    Nmap
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    Target Host
+                </span>
+
+                <strong>
+
+                    {% if nmap_results %}
+
+                        {{ nmap_results[0]["host"] }}
+
+                    {% else %}
+
+                        Not Available
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    Status
+                </span>
+
+                <strong class="status-success">
+                    Completed
+                </strong>
+
+            </div>
+
+        </section>
+
+
+
+        {% if nmap_results %}
+
+
+            {% for result in nmap_results %}
+
+
+            <article class="vulnerability-card nmap-card">
+
+
+                <div class="vulnerability-top">
+
+
+                    <div>
+
+                        <span class="risk-badge risk-low">
+
+                            NETWORK SERVICE
+
+                        </span>
+
+
+                        <h3>
+
+                            Port {{ result["port"] }}
+                            /
+                            {{ result["protocol"]|upper }}
+
+                        </h3>
+
+                    </div>
+
+
+                    <div class="finding-number">
+
+                        {{ result["state"]|upper }}
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- HOST -->
+
+                <div class="affected-url">
+
+                    <span>
+                        TARGET HOST
+                    </span>
+
+                    <p>
+                        {{ result["host"] }}
+                    </p>
+
+                </div>
+
+
+
+                <!-- PORT AND PROTOCOL -->
+
+                <div class="single-finding-block">
+
+                    <h4>
+                        Port Information
+                    </h4>
+
+                    <p>
+
+                        Port:
+                        <strong>
+                            {{ result["port"] }}
+                        </strong>
+
+                        &nbsp; | &nbsp;
+
+                        Protocol:
+                        <strong>
+                            {{ result["protocol"]|upper }}
+                        </strong>
+
+                        &nbsp; | &nbsp;
+
+                        State:
+                        <strong>
+                            {{ result["state"]|upper }}
+                        </strong>
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- SERVICE -->
+
+                <div class="single-finding-block">
+
+                    <h4>
+                        Detected Service
+                    </h4>
+
+                    <p>
+
+                        Service:
+                        <strong>
+                            {{ result["service"] }}
+                        </strong>
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- PRODUCT -->
+
+                <div class="single-finding-block">
+
+                    <h4>
+                        Product
+                    </h4>
+
+                    <p>
+                        {{ result["product"] }}
+                    </p>
+
+                </div>
+
+
+
+                <!-- VERSION -->
+
+                <div class="single-finding-block">
+
+                    <h4>
+                        Version
+                    </h4>
+
+                    <p>
+                        {{ result["version"] }}
+                    </p>
+
+                </div>
+
+
+
+                <!-- EXTRA INFORMATION -->
+
+                {% if result["extra_info"] %}
+
+                <div class="single-finding-block solution-single">
+
+                    <h4>
+                        Additional Service Information
+                    </h4>
+
+                    <p>
+                        {{ result["extra_info"] }}
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+
+            </article>
+
+
+            {% endfor %}
+
+
+        {% else %}
+
+
+            <div class="no-findings">
+
+                <div>
+                    ◎
+                </div>
+
+                <h2>
+                    No network service information detected
+                </h2>
+
+                <p>
+
+                    Nmap did not return service information
+                    for the selected target and port.
+
+                </p>
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- SCAN ANOTHER TARGET -->
+
+    <div class="bottom-actions">
+
+        <a
+            href="/"
+            class="scan-another-btn"
+        >
+
+            Scan Another Target
+
+        </a>
+
+    </div>
+
+
+</main>
+
+
+
+<footer>
+
+    <p>
+        WebShield • Security Assessment Report
+    </p>
+
+    <p>
+        Authorized security testing only
+    </p>
+
+</footer>
+
+
+
+<!-- JAVASCRIPT -->
+
+<script>
+
+    let currentIndex = 0;
+
+    const alerts =
+        document.querySelectorAll(".alert-card");
+
+    const previousButton =
+        document.getElementById("previousButton");
+
+    const nextButton =
+        document.getElementById("nextButton");
+
+    const currentAlert =
+        document.getElementById("currentAlert");
+
+
+    function showAlert(index) {
+
+        if (alerts.length === 0) {
+            return;
+        }
+
+
+        alerts.forEach(
+            function(alert) {
+
+                alert.style.display = "none";
+
+            }
+        );
+
+
+        alerts[index].style.display =
+            "block";
+
+
+        if (currentAlert) {
+
+            currentAlert.textContent =
+                index + 1;
+
+        }
+
+
+        if (previousButton) {
+
+            previousButton.disabled =
+                index === 0;
+
+        }
+
+
+        if (nextButton) {
+
+            if (
+                index ===
+                alerts.length - 1
+            ) {
+
+                nextButton.textContent =
+                    "Last Alert";
+
+                nextButton.disabled =
+                    true;
+
+            }
+
+            else {
+
+                nextButton.textContent =
+                    "Next Alert →";
+
+                nextButton.disabled =
+                    false;
+
+            }
+
+        }
+
+    }
+
+
+    function nextAlert() {
+
+        if (
+            currentIndex <
+            alerts.length - 1
+        ) {
+
+            currentIndex++;
+
+            showAlert(
+                currentIndex
+            );
+
+        }
+
+    }
+
+
+    function previousAlert() {
+
+        if (
+            currentIndex > 0
+        ) {
+
+            currentIndex--;
+
+            showAlert(
+                currentIndex
+            );
+
+        }
+
+    }
+
+
+    if (alerts.length > 0) {
+
+        showAlert(0);
+
+    }
+
+</script>
+
+
+</body>
+
+</html>

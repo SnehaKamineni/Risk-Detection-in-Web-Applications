@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        WebShield | Security Assessment
+    </title>
+
+    <!-- IMPORTANT: style.css is directly inside static -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     NAVIGATION BAR
+===================================================== -->
+
+<nav class="navbar">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            S
+        </div>
+
+        <div>
+
+            <h2>
+                WebShield
+            </h2>
+
+            <span>
+                Security Intelligence
+            </span>
+
+        </div>
+
+    </div>
+
+
+    {% if zap_connected %}
+
+    <div class="nav-status">
+
+        <span class="status-dot"></span>
+
+        OWASP ZAP Connected
+
+    </div>
+
+    {% else %}
+
+    <div class="nav-status disconnected-status">
+
+        <span class="status-dot disconnected-dot"></span>
+
+        OWASP ZAP Disconnected
+
+    </div>
+
+    {% endif %}
+
+</nav>
+
+
+
+<!-- =====================================================
+     HERO SECTION
+===================================================== -->
+
+<main class="hero">
+
+    <div class="hero-glow glow-one"></div>
+    <div class="hero-glow glow-two"></div>
+
+
+    <section class="hero-content">
+
+
+        <div class="tag">
+
+            ◆ AUTOMATED WEB SECURITY
+
+        </div>
+
+
+        <h1>
+
+            Detect vulnerabilities.
+
+            <span>
+                Secure your web.
+            </span>
+
+        </h1>
+
+
+        <p class="hero-description">
+
+            Automated web application security assessment
+            powered by OWASP ZAP.
+
+            Discover security weaknesses, analyze severity
+            and receive remediation guidance.
+
+        </p>
+
+
+
+        <!-- =================================================
+             SCANNER CARD
+        ================================================== -->
+
+        <div class="scanner-card">
+
+
+            <div class="scanner-heading">
+
+                <div>
+
+                    <p class="small-heading">
+                        SECURITY SCANNER
+                    </p>
+
+                    <h3>
+                        Start Vulnerability Assessment
+                    </h3>
+
+                </div>
+
+
+                <div class="ready-status">
+
+                    {% if zap_connected %}
+
+                        <span></span>
+                        Ready
+
+                    {% else %}
+
+                        ZAP Offline
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+
+            {% if error %}
+
+            <div class="error-message">
+
+                {{ error }}
+
+            </div>
+
+            {% endif %}
+
+
+
+            <form
+                action="/scan"
+                method="POST"
+                class="scan-form"
+            >
+
+
+                <label for="url">
+
+                    TARGET WEB APPLICATION
+
+                </label>
+
+
+                <div class="url-input-container">
+
+
+                    <span class="url-icon">
+                        ◉
+                    </span>
+
+
+                    <input
+                        type="url"
+                        id="url"
+                        name="url"
+                        placeholder="http://127.0.0.1:5001"
+                        required
+                    >
+
+
+                    <button type="submit">
+
+                        Start Scan
+
+                        <span>
+                            →
+                        </span>
+
+                    </button>
+
+
+                </div>
+
+
+                <div class="scan-info">
+
+                    <span>
+                        ✓ Spider Discovery
+                    </span>
+
+                    <span>
+                        ✓ Active Security Scan
+                    </span>
+
+                    <span>
+                        ✓ Severity Analysis
+                    </span>
+
+                </div>
+
+
+            </form>
+
+        </div>
+
+
+
+        <!-- =================================================
+             FEATURE CARDS
+        ================================================== -->
+
+        <section class="features">
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    ◈
+                </div>
+
+                <h3>
+                    Vulnerability Detection
+                </h3>
+
+                <p>
+
+                    Detect common security weaknesses
+                    using automated web security testing.
+
+                </p>
+
+            </div>
+
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    ◎
+                </div>
+
+                <h3>
+                    Severity Analysis
+                </h3>
+
+                <p>
+
+                    Classify detected findings according
+                    to their current security severity.
+
+                </p>
+
+            </div>
+
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    Remediation Guidance
+                </h3>
+
+                <p>
+
+                    Understand each vulnerability
+                    and receive recommended
+                    corrective measures.
+
+                </p>
+
+            </div>
+
+
+        </section>
+
+
+    </section>
+
+</main>
+
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer>
+
+    <p>
+
+        WebShield • Web Application Security Assessment System
+
+    </p>
+
+    <p>
+
+        Authorized security testing only
+
+    </p>
+
+</footer>
+
+
+</body>
+
+</html>
