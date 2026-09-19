@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Nmap Analysis | WebShield
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+<nav class="navbar">
+
+    <a href="/" class="brand brand-link">
+
+        <div class="brand-icon">
+            S
+        </div>
+
+        <div>
+
+            <h2>
+                WebShield
+            </h2>
+
+            <span>
+                Security Intelligence
+            </span>
+
+        </div>
+
+    </a>
+
+
+    <div class="nav-status">
+
+        <span class="status-dot"></span>
+
+        Network Analysis
+
+    </div>
+
+</nav>
+
+
+
+<div class="dashboard">
+
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-section-title">
+            SECURITY ANALYSIS
+        </div>
+
+
+        <a
+            href="/"
+            class="sidebar-link"
+        >
+
+            <span class="sidebar-icon">
+                ⌂
+            </span>
+
+            <span class="sidebar-text">
+                Home
+            </span>
+
+        </a>
+
+
+        <a
+            href="/nmap-results"
+            class="sidebar-link active"
+        >
+
+            <span class="sidebar-icon">
+                ◈
+            </span>
+
+            <span class="sidebar-text">
+                Nmap Analysis
+            </span>
+
+        </a>
+
+
+        <a
+            href="/semgrep-results"
+            class="sidebar-link"
+        >
+
+            <span class="sidebar-icon">
+                ◉
+            </span>
+
+            <span class="sidebar-text">
+                Semgrep Analysis
+            </span>
+
+        </a>
+
+
+        <div class="sidebar-bottom">
+
+            <div class="sidebar-divider"></div>
+
+            <p>
+                Web Application
+                Security Assessment
+            </p>
+
+            <span>
+                Authorized testing only
+            </span>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- MAIN -->
+
+    <main class="dashboard-content">
+
+
+        <section class="analysis-page-content">
+
+
+            <section class="result-header">
+
+                <div>
+
+                    <p class="small-heading">
+                        NETWORK SECURITY ANALYSIS
+                    </p>
+
+                    <h1>
+                        Nmap Analysis
+                    </h1>
+
+                    <p class="target-url">
+                        Network and service information
+                        discovered during the latest scan.
+                    </p>
+
+                </div>
+
+
+                <div class="scan-complete">
+                    ✓ Analysis Complete
+                </div>
+
+            </section>
+
+
+
+            <!-- SUMMARY -->
+
+            <section class="summary-grid">
+
+
+                <div class="summary-card">
+
+                    <p>
+                        OPEN SERVICES
+                    </p>
+
+                    <h2>
+                        {{ total_ports }}
+                    </h2>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <p>
+                        SCANNER
+                    </p>
+
+                    <h2>
+                        Nmap
+                    </h2>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <p>
+                        STATUS
+                    </p>
+
+                    <h2>
+                        Ready
+                    </h2>
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- NMAP RESULTS -->
+
+            <section class="findings-section">
+
+
+                <div class="findings-title">
+
+                    <div>
+
+                        <p class="small-heading">
+                            NETWORK DISCOVERY
+                        </p>
+
+                        <h2>
+                            Detected Services
+                        </h2>
+
+                    </div>
+
+
+                    <div class="finding-count">
+
+                        {{ total_ports }}
+
+                        {% if total_ports == 1 %}
+                            Port
+                        {% else %}
+                            Ports
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+
+                <section class="scan-details">
+
+
+                    <div>
+
+                        <span>
+                            Scanner
+                        </span>
+
+                        <strong>
+                            Nmap
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Target Host
+                        </span>
+
+                        <strong>
+
+                            {% if nmap_results %}
+
+                                {{ nmap_results[0]["host"] }}
+
+                            {% else %}
+
+                                Not Available
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Status
+                        </span>
+
+                        <strong class="status-success">
+                            Completed
+                        </strong>
+
+                    </div>
+
+
+                </section>
+
+
+
+                {% if nmap_results %}
+
+
+                    {% for result in nmap_results %}
+
+
+                    <article class="vulnerability-card">
+
+
+                        <div class="vulnerability-top">
+
+                            <div>
+
+                                <span class="risk-badge risk-low">
+                                    NETWORK SERVICE
+                                </span>
+
+                                <h3>
+
+                                    Port {{ result["port"] }}
+                                    /
+                                    {{ result["protocol"]|upper }}
+
+                                </h3>
+
+                            </div>
+
+
+                            <div class="finding-number">
+
+                                {{ result["state"]|upper }}
+
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="affected-url">
+
+                            <span>
+                                TARGET HOST
+                            </span>
+
+                            <p>
+                                {{ result["host"] }}
+                            </p>
+
+                        </div>
+
+
+
+                        <div class="single-finding-block">
+
+                            <h4>
+                                Port Information
+                            </h4>
+
+                            <p>
+
+                                Port:
+
+                                <strong>
+                                    {{ result["port"] }}
+                                </strong>
+
+                                &nbsp; | &nbsp;
+
+                                Protocol:
+
+                                <strong>
+                                    {{ result["protocol"]|upper }}
+                                </strong>
+
+                                &nbsp; | &nbsp;
+
+                                State:
+
+                                <strong>
+                                    {{ result["state"]|upper }}
+                                </strong>
+
+                            </p>
+
+                        </div>
+
+
+
+                        <div class="single-finding-block">
+
+                            <h4>
+                                Detected Service
+                            </h4>
+
+                            <p>
+
+                                Service:
+
+                                <strong>
+                                    {{ result["service"] }}
+                                </strong>
+
+                            </p>
+
+                        </div>
+
+
+
+                        <div class="single-finding-block">
+
+                            <h4>
+                                Product
+                            </h4>
+
+                            <p>
+                                {{ result["product"] }}
+                            </p>
+
+                        </div>
+
+
+
+                        <div class="single-finding-block">
+
+                            <h4>
+                                Version
+                            </h4>
+
+                            <p>
+                                {{ result["version"] }}
+                            </p>
+
+                        </div>
+
+
+
+                        {% if result["extra_info"] %}
+
+                        <div class="single-finding-block solution-single">
+
+                            <h4>
+                                Additional Service Information
+                            </h4>
+
+                            <p>
+                                {{ result["extra_info"] }}
+                            </p>
+
+                        </div>
+
+                        {% endif %}
+
+
+                    </article>
+
+
+                    {% endfor %}
+
+
+                {% else %}
+
+
+                    <div class="no-findings">
+
+                        <div>
+                            ◎
+                        </div>
+
+                        <h2>
+                            No Nmap results available
+                        </h2>
+
+                        <p>
+
+                            Run a security scan from the
+                            WebShield home page to generate
+                            Nmap network analysis results.
+
+                        </p>
+
+                    </div>
+
+
+                {% endif %}
+
+
+            </section>
+
+
+        </section>
+
+    </main>
+
+</div>
+
+
+
+<footer>
+
+    <p>
+        WebShield • Network Security Analysis
+    </p>
+
+    <p>
+        Authorized security testing only
+    </p>
+
+</footer>
+
+
+</body>
+
+</html>

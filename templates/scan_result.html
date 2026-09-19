@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -17,10 +18,12 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
+
 </head>
 
 
 <body>
+
 
 <!-- NAVBAR -->
 
@@ -33,11 +36,15 @@
         </div>
 
         <div>
-            <h2>WebShield</h2>
+
+            <h2>
+                WebShield
+            </h2>
 
             <span>
                 Security Intelligence
             </span>
+
         </div>
 
     </a>
@@ -574,6 +581,7 @@
                     <p>
 
                         Port:
+
                         <strong>
                             {{ result["port"] }}
                         </strong>
@@ -581,6 +589,7 @@
                         &nbsp; | &nbsp;
 
                         Protocol:
+
                         <strong>
                             {{ result["protocol"]|upper }}
                         </strong>
@@ -588,6 +597,7 @@
                         &nbsp; | &nbsp;
 
                         State:
+
                         <strong>
                             {{ result["state"]|upper }}
                         </strong>
@@ -609,6 +619,7 @@
                     <p>
 
                         Service:
+
                         <strong>
                             {{ result["service"] }}
                         </strong>
@@ -679,24 +690,263 @@
         {% else %}
 
 
-            <div class="no-findings">
+        <div class="no-findings">
 
-                <div>
-                    ◎
-                </div>
+            <div>
+                ◎
+            </div>
 
-                <h2>
-                    No network service information detected
-                </h2>
+            <h2>
+                No network service information detected
+            </h2>
 
-                <p>
+            <p>
 
-                    Nmap did not return service information
-                    for the selected target and port.
+                Nmap did not return service information
+                for the selected target and port.
 
+            </p>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- ================================================= -->
+    <!-- SEMGREP SOURCE CODE SECURITY SECTION -->
+    <!-- ================================================= -->
+
+    <section class="findings-section semgrep-section">
+
+
+        <div class="findings-title">
+
+            <div>
+
+                <p class="small-heading">
+                    SOURCE CODE SECURITY ANALYSIS
                 </p>
 
+                <h2>
+                    Semgrep Code Analysis
+                </h2>
+
             </div>
+
+
+            <div class="finding-count">
+
+                {{ total_semgrep_findings }}
+
+                {% if total_semgrep_findings == 1 %}
+                    Finding
+                {% else %}
+                    Findings
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+
+        <!-- SEMGREP SCANNER INFORMATION -->
+
+        <section class="scan-details">
+
+            <div>
+
+                <span>
+                    Scanner
+                </span>
+
+                <strong>
+                    Semgrep
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    Target
+                </span>
+
+                <strong>
+                    Source Code
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    Status
+                </span>
+
+                <strong class="status-success">
+                    Completed
+                </strong>
+
+            </div>
+
+        </section>
+
+
+
+        {% if semgrep_results %}
+
+
+            {% for finding in semgrep_results %}
+
+
+            <article class="vulnerability-card semgrep-card">
+
+
+                <div class="vulnerability-top">
+
+
+                    <div>
+
+                        <span class="risk-badge risk-medium">
+
+                            {{ finding["severity"] }}
+
+                        </span>
+
+
+                        <h3>
+
+                            {{ finding["check_id"] }}
+
+                        </h3>
+
+                    </div>
+
+
+                    <div class="finding-number">
+
+                        Finding #{{ loop.index }}
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- SOURCE FILE -->
+
+                <div class="affected-url">
+
+                    <span>
+                        SOURCE FILE
+                    </span>
+
+                    <p>
+                        {{ finding["path"] }}
+                    </p>
+
+                </div>
+
+
+
+                <!-- SOURCE CODE LOCATION -->
+
+                <div class="single-finding-block">
+
+                    <h4>
+                        Source Code Location
+                    </h4>
+
+                    <p>
+
+                        Line:
+
+                        <strong>
+                            {{ finding["start_line"] }}
+                        </strong>
+
+                        {% if finding["end_line"] != finding["start_line"] %}
+
+                            -
+
+                            <strong>
+                                {{ finding["end_line"] }}
+                            </strong>
+
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- SEMGREP RULE -->
+
+                <div class="single-finding-block">
+
+                    <h4>
+                        Security Rule
+                    </h4>
+
+                    <p>
+                        {{ finding["check_id"] }}
+                    </p>
+
+                </div>
+
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="single-finding-block solution-single">
+
+                    <h4>
+                        Finding Description
+                    </h4>
+
+                    <p>
+                        {{ finding["message"] }}
+                    </p>
+
+                </div>
+
+
+            </article>
+
+
+            {% endfor %}
+
+
+        {% else %}
+
+
+        <div class="no-findings">
+
+            <div>
+                ✓
+            </div>
+
+            <h2>
+                No Semgrep findings detected
+            </h2>
+
+            <p>
+
+                Semgrep did not identify any source-code
+                security findings for the scanned project.
+
+            </p>
+
+        </div>
 
 
         {% endif %}
@@ -746,17 +996,22 @@
 
     let currentIndex = 0;
 
+
     const alerts =
         document.querySelectorAll(".alert-card");
+
 
     const previousButton =
         document.getElementById("previousButton");
 
+
     const nextButton =
         document.getElementById("nextButton");
 
+
     const currentAlert =
         document.getElementById("currentAlert");
+
 
 
     function showAlert(index) {
@@ -825,6 +1080,7 @@
     }
 
 
+
     function nextAlert() {
 
         if (
@@ -843,6 +1099,7 @@
     }
 
 
+
     function previousAlert() {
 
         if (
@@ -858,6 +1115,7 @@
         }
 
     }
+
 
 
     if (alerts.length > 0) {

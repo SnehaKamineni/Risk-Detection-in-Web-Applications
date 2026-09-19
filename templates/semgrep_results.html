@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Semgrep Analysis | WebShield
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+<nav class="navbar">
+
+    <a href="/" class="brand brand-link">
+
+        <div class="brand-icon">
+            S
+        </div>
+
+        <div>
+
+            <h2>
+                WebShield
+            </h2>
+
+            <span>
+                Security Intelligence
+            </span>
+
+        </div>
+
+    </a>
+
+
+    <div class="nav-status">
+
+        <span class="status-dot"></span>
+
+        Source Code Analysis
+
+    </div>
+
+</nav>
+
+
+
+<div class="dashboard">
+
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-section-title">
+            SECURITY ANALYSIS
+        </div>
+
+
+        <a
+            href="/"
+            class="sidebar-link"
+        >
+
+            <span class="sidebar-icon">
+                ⌂
+            </span>
+
+            <span class="sidebar-text">
+                Home
+            </span>
+
+        </a>
+
+
+        <a
+            href="/nmap-results"
+            class="sidebar-link"
+        >
+
+            <span class="sidebar-icon">
+                ◈
+            </span>
+
+            <span class="sidebar-text">
+                Nmap Analysis
+            </span>
+
+        </a>
+
+
+        <a
+            href="/semgrep-results"
+            class="sidebar-link active"
+        >
+
+            <span class="sidebar-icon">
+                ◉
+            </span>
+
+            <span class="sidebar-text">
+                Semgrep Analysis
+            </span>
+
+        </a>
+
+
+        <div class="sidebar-bottom">
+
+            <div class="sidebar-divider"></div>
+
+            <p>
+                Web Application
+                Security Assessment
+            </p>
+
+            <span>
+                Authorized testing only
+            </span>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- MAIN -->
+
+    <main class="dashboard-content">
+
+
+        <section class="analysis-page-content">
+
+
+            <section class="result-header">
+
+                <div>
+
+                    <p class="small-heading">
+                        SOURCE CODE SECURITY ANALYSIS
+                    </p>
+
+                    <h1>
+                        Semgrep Analysis
+                    </h1>
+
+                    <p class="target-url">
+
+                        Static analysis of source code
+                        for security-related coding patterns.
+
+                    </p>
+
+                </div>
+
+
+                <div class="scan-complete">
+
+                    ✓ Analysis Complete
+
+                </div>
+
+            </section>
+
+
+
+            <!-- SUMMARY -->
+
+            <section class="summary-grid">
+
+
+                <div class="summary-card">
+
+                    <p>
+                        TOTAL FINDINGS
+                    </p>
+
+                    <h2>
+                        {{ total_semgrep_findings }}
+                    </h2>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <p>
+                        SCANNER
+                    </p>
+
+                    <h2>
+                        Semgrep
+                    </h2>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <p>
+                        ANALYSIS TYPE
+                    </p>
+
+                    <h2>
+                        SAST
+                    </h2>
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- FINDINGS -->
+
+            <section class="findings-section">
+
+
+                <div class="findings-title">
+
+                    <div>
+
+                        <p class="small-heading">
+                            STATIC APPLICATION SECURITY TESTING
+                        </p>
+
+                        <h2>
+                            Source Code Findings
+                        </h2>
+
+                    </div>
+
+
+                    <div class="finding-count">
+
+                        {{ total_semgrep_findings }}
+
+                        {% if total_semgrep_findings == 1 %}
+                            Finding
+                        {% else %}
+                            Findings
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+
+                <section class="scan-details">
+
+
+                    <div>
+
+                        <span>
+                            Scanner
+                        </span>
+
+                        <strong>
+                            Semgrep
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Analysis
+                        </span>
+
+                        <strong>
+                            Source Code
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Status
+                        </span>
+
+                        <strong class="status-success">
+                            Completed
+                        </strong>
+
+                    </div>
+
+
+                </section>
+
+
+
+                {% if semgrep_results %}
+
+
+                    {% for finding in semgrep_results %}
+
+
+                    <article class="vulnerability-card">
+
+
+                        <div class="vulnerability-top">
+
+
+                            <div>
+
+                                <span class="risk-badge risk-medium">
+
+                                    {{ finding["severity"] }}
+
+                                </span>
+
+
+                                <h3>
+
+                                    {{ finding["check_id"] }}
+
+                                </h3>
+
+                            </div>
+
+
+                            <div class="finding-number">
+
+                                Finding #{{ loop.index }}
+
+                            </div>
+
+
+                        </div>
+
+
+
+                        <!-- SOURCE FILE -->
+
+                        <div class="affected-url">
+
+                            <span>
+                                SOURCE FILE
+                            </span>
+
+                            <p>
+                                {{ finding["path"] }}
+                            </p>
+
+                        </div>
+
+
+
+                        <!-- LOCATION -->
+
+                        <div class="single-finding-block">
+
+                            <h4>
+                                Source Code Location
+                            </h4>
+
+                            <p>
+
+                                Line:
+
+                                <strong>
+                                    {{ finding["start_line"] }}
+                                </strong>
+
+
+                                {% if finding["end_line"] != finding["start_line"] %}
+
+                                    -
+
+                                    <strong>
+                                        {{ finding["end_line"] }}
+                                    </strong>
+
+                                {% endif %}
+
+                            </p>
+
+                        </div>
+
+
+
+                        <!-- RULE -->
+
+                        <div class="single-finding-block">
+
+                            <h4>
+                                Security Rule
+                            </h4>
+
+                            <p>
+                                {{ finding["check_id"] }}
+                            </p>
+
+                        </div>
+
+
+
+                        <!-- MESSAGE -->
+
+                        <div class="single-finding-block solution-single">
+
+                            <h4>
+                                Finding Description
+                            </h4>
+
+                            <p>
+                                {{ finding["message"] }}
+                            </p>
+
+                        </div>
+
+
+                    </article>
+
+
+                    {% endfor %}
+
+
+                {% else %}
+
+
+                    <div class="no-findings">
+
+                        <div>
+                            ✓
+                        </div>
+
+                        <h2>
+                            No Semgrep findings detected
+                        </h2>
+
+                        <p>
+
+                            Run a security scan from the
+                            WebShield home page to generate
+                            Semgrep source-code findings.
+
+                        </p>
+
+                    </div>
+
+
+                {% endif %}
+
+
+            </section>
+
+
+        </section>
+
+    </main>
+
+</div>
+
+
+
+<footer>
+
+    <p>
+        WebShield • Source Code Security Analysis
+    </p>
+
+    <p>
+        Authorized security testing only
+    </p>
+
+</footer>
+
+
+</body>
+
+</html>

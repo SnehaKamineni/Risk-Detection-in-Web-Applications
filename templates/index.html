@@ -14,7 +14,6 @@
         WebShield | Security Assessment
     </title>
 
-    <!-- IMPORTANT: style.css is directly inside static -->
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
@@ -27,12 +26,12 @@
 
 
 <!-- =====================================================
-     NAVIGATION BAR
+     TOP NAVIGATION
 ===================================================== -->
 
 <nav class="navbar">
 
-    <div class="brand">
+    <a href="/" class="brand brand-link">
 
         <div class="brand-icon">
             S
@@ -50,7 +49,7 @@
 
         </div>
 
-    </div>
+    </a>
 
 
     {% if zap_connected %}
@@ -80,264 +79,342 @@
 
 
 <!-- =====================================================
-     HERO SECTION
+     DASHBOARD
 ===================================================== -->
 
-<main class="hero">
-
-    <div class="hero-glow glow-one"></div>
-    <div class="hero-glow glow-two"></div>
+<div class="dashboard">
 
 
-    <section class="hero-content">
+    <!-- =================================================
+         LEFT SIDEBAR
+    ================================================== -->
 
+    <aside class="sidebar">
 
-        <div class="tag">
-
-            ◆ AUTOMATED WEB SECURITY
-
+        <div class="sidebar-section-title">
+            SECURITY ANALYSIS
         </div>
 
 
-        <h1>
+        <!-- HOME -->
 
-            Detect vulnerabilities.
+        <a
+            href="/"
+            class="sidebar-link active"
+        >
 
-            <span>
-                Secure your web.
+            <span class="sidebar-icon">
+                ⌂
             </span>
 
-        </h1>
+            <span class="sidebar-text">
+                Home
+            </span>
+
+        </a>
 
 
-        <p class="hero-description">
+        <!-- NMAP -->
 
-            Automated web application security assessment
-            powered by OWASP ZAP.
+        <a
+            href="/nmap-results"
+            class="sidebar-link"
+        >
 
-            Discover security weaknesses, analyze severity
-            and receive remediation guidance.
+            <span class="sidebar-icon">
+                ◈
+            </span>
 
-        </p>
+            <span class="sidebar-text">
+                Nmap Analysis
+            </span>
 
-
-
-        <!-- =================================================
-             SCANNER CARD
-        ================================================== -->
-
-        <div class="scanner-card">
-
-
-            <div class="scanner-heading">
-
-                <div>
-
-                    <p class="small-heading">
-                        SECURITY SCANNER
-                    </p>
-
-                    <h3>
-                        Start Vulnerability Assessment
-                    </h3>
-
-                </div>
+        </a>
 
 
-                <div class="ready-status">
+        <!-- SEMGREP -->
 
-                    {% if zap_connected %}
+        <a
+            href="/semgrep-results"
+            class="sidebar-link"
+        >
 
-                        <span></span>
-                        Ready
+            <span class="sidebar-icon">
+                ◉
+            </span>
 
-                    {% else %}
+            <span class="sidebar-text">
+                Semgrep Analysis
+            </span>
 
-                        ZAP Offline
-
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-
-
-            {% if error %}
-
-            <div class="error-message">
-
-                {{ error }}
-
-            </div>
-
-            {% endif %}
+        </a>
 
 
+        <div class="sidebar-bottom">
 
-            <form
-                action="/scan"
-                method="POST"
-                class="scan-form"
-            >
+            <div class="sidebar-divider"></div>
 
+            <p>
+                Web Application
+                Security Assessment
+            </p>
 
-                <label for="url">
-
-                    TARGET WEB APPLICATION
-
-                </label>
-
-
-                <div class="url-input-container">
-
-
-                    <span class="url-icon">
-                        ◉
-                    </span>
-
-
-                    <input
-                        type="url"
-                        id="url"
-                        name="url"
-                        placeholder="http://127.0.0.1:5001"
-                        required
-                    >
-
-
-                    <button type="submit">
-
-                        Start Scan
-
-                        <span>
-                            →
-                        </span>
-
-                    </button>
-
-
-                </div>
-
-
-                <div class="scan-info">
-
-                    <span>
-                        ✓ Spider Discovery
-                    </span>
-
-                    <span>
-                        ✓ Active Security Scan
-                    </span>
-
-                    <span>
-                        ✓ Severity Analysis
-                    </span>
-
-                </div>
-
-
-            </form>
+            <span>
+                Authorized testing only
+            </span>
 
         </div>
 
+    </aside>
 
 
-        <!-- =================================================
-             FEATURE CARDS
-        ================================================== -->
 
-        <section class="features">
+    <!-- =================================================
+         MAIN CONTENT
+    ================================================== -->
+
+    <main class="dashboard-content">
+
+        <div class="hero-glow glow-one"></div>
+
+        <div class="hero-glow glow-two"></div>
 
 
-            <div class="feature-card">
+        <section class="hero-content">
 
-                <div class="feature-icon">
-                    ◈
+
+            <div class="tag">
+
+                ◆ AUTOMATED WEB SECURITY
+
+            </div>
+
+
+            <h1>
+
+                Detect vulnerabilities.
+
+                <span>
+                    Secure your web.
+                </span>
+
+            </h1>
+
+
+            <p class="hero-description">
+
+                Automated web application security assessment
+                powered by OWASP ZAP.
+
+                Discover security weaknesses, analyze severity
+                and receive remediation guidance.
+
+            </p>
+
+
+
+            <!-- SCANNER -->
+
+            <div class="scanner-card">
+
+
+                <div class="scanner-heading">
+
+                    <div>
+
+                        <p class="small-heading">
+                            SECURITY SCANNER
+                        </p>
+
+                        <h3>
+                            Start Vulnerability Assessment
+                        </h3>
+
+                    </div>
+
+
+                    <div class="ready-status">
+
+                        {% if zap_connected %}
+
+                            <span></span>
+                            Ready
+
+                        {% else %}
+
+                            ZAP Offline
+
+                        {% endif %}
+
+                    </div>
+
                 </div>
 
-                <h3>
-                    Vulnerability Detection
-                </h3>
 
-                <p>
 
-                    Detect common security weaknesses
-                    using automated web security testing.
+                {% if error %}
 
-                </p>
+                <div class="error-message">
+
+                    {{ error }}
+
+                </div>
+
+                {% endif %}
+
+
+
+                <form
+                    action="/scan"
+                    method="POST"
+                    class="scan-form"
+                >
+
+                    <label for="url">
+
+                        TARGET WEB APPLICATION
+
+                    </label>
+
+
+                    <div class="url-input-container">
+
+                        <span class="url-icon">
+                            ◉
+                        </span>
+
+
+                        <input
+                            type="url"
+                            id="url"
+                            name="url"
+                            placeholder="http://127.0.0.1:5001"
+                            required
+                        >
+
+
+                        <button type="submit">
+
+                            Start Scan
+
+                            <span>
+                                →
+                            </span>
+
+                        </button>
+
+                    </div>
+
+
+                    <div class="scan-info">
+
+                        <span>
+                            ✓ Spider Discovery
+                        </span>
+
+                        <span>
+                            ✓ Active Security Scan
+                        </span>
+
+                        <span>
+                            ✓ Severity Analysis
+                        </span>
+
+                    </div>
+
+                </form>
 
             </div>
 
 
 
-            <div class="feature-card">
+            <!-- FEATURES -->
 
-                <div class="feature-icon">
-                    ◎
+            <section class="features">
+
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        ◈
+                    </div>
+
+                    <h3>
+                        Vulnerability Detection
+                    </h3>
+
+                    <p>
+
+                        Detect common security weaknesses
+                        using automated web security testing.
+
+                    </p>
+
                 </div>
 
-                <h3>
-                    Severity Analysis
-                </h3>
-
-                <p>
-
-                    Classify detected findings according
-                    to their current security severity.
-
-                </p>
-
-            </div>
 
 
+                <div class="feature-card">
 
-            <div class="feature-card">
+                    <div class="feature-icon">
+                        ◎
+                    </div>
 
-                <div class="feature-icon">
-                    ✓
+                    <h3>
+                        Severity Analysis
+                    </h3>
+
+                    <p>
+
+                        Classify detected findings according
+                        to their current security severity.
+
+                    </p>
+
                 </div>
 
-                <h3>
-                    Remediation Guidance
-                </h3>
 
-                <p>
 
-                    Understand each vulnerability
-                    and receive recommended
-                    corrective measures.
+                <div class="feature-card">
 
-                </p>
+                    <div class="feature-icon">
+                        ✓
+                    </div>
 
-            </div>
+                    <h3>
+                        Remediation Guidance
+                    </h3>
+
+                    <p>
+
+                        Understand each vulnerability
+                        and receive recommended
+                        corrective measures.
+
+                    </p>
+
+                </div>
+
+
+            </section>
 
 
         </section>
 
+    </main>
 
-    </section>
-
-</main>
-
+</div>
 
 
-<!-- =====================================================
-     FOOTER
-===================================================== -->
 
 <footer>
 
     <p>
-
         WebShield • Web Application Security Assessment System
-
     </p>
 
     <p>
-
         Authorized security testing only
-
     </p>
 
 </footer>

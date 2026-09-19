@@ -8,7 +8,7 @@ import time
 
 # Copy your current API key from:
 # OWASP ZAP -> Tools -> Options -> API
-API_KEY = "3qtdt8nmoumjm6evgc5f42kk2c"
+API_KEY = "30756ujko3vvadgc7ig86rrdck"
 
 
 proxies = {

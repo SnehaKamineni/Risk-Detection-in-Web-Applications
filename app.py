@@ -1,54 +1,79 @@
 from flask import Flask, render_template, request
 from urllib.parse import urlparse
+
 from nmap_scanner import run_nmap_scan
+from semgrep_scanner import run_semgrep_scan
+
 from zapv2 import ZAPv2
 from dotenv import load_dotenv
+
 import os
 import time
+
+
+# ============================================================
+# FLASK APPLICATION
+# ============================================================
 
 app = Flask(__name__)
 
 
-# =========================================================
-# OWASP ZAP CONFIGURATION
-# =========================================================
+# ============================================================
+# ENVIRONMENT
+# ============================================================
+
 load_dotenv()
 
 API_KEY = os.getenv("ZAP_API_KEY")
 
-proxies = {
-    "http": "http://localhost:8080",
-    "https": "http://localhost:8080"
+
+# ============================================================
+# OWASP ZAP CONFIGURATION
+# ============================================================
+
+ZAP_HOST = "127.0.0.1"
+ZAP_PORT = 8080
+
+ZAP_PROXIES = {
+    "http": f"http://{ZAP_HOST}:{ZAP_PORT}",
+    "https": f"http://{ZAP_HOST}:{ZAP_PORT}"
 }
+
 
 zap = ZAPv2(
     apikey=API_KEY,
-    proxies=proxies
+    proxies=ZAP_PROXIES
 )
 
 
-# =========================================================
-# CHECK WHETHER ZAP IS CONNECTED
-# =========================================================
+# ============================================================
+# LATEST SCAN RESULTS
+# ============================================================
 
-def check_zap_connection():
-
-    try:
-        zap.core.version
-        return True
-
-    except Exception:
-        return False
+latest_nmap_results = []
+latest_semgrep_results = []
 
 
-# =========================================================
-# HOME PAGE
-# =========================================================
+# ============================================================
+# HOME
+# ============================================================
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def home():
 
-    zap_connected = check_zap_connection()
+    zap_connected = False
+
+    try:
+
+        version = zap.core.version
+
+        if version:
+            zap_connected = True
+
+    except Exception:
+
+        zap_connected = False
+
 
     return render_template(
         "index.html",
@@ -56,139 +81,156 @@ def home():
     )
 
 
-# =========================================================
+# ============================================================
+# NMAP RESULTS
+# ============================================================
+
+@app.route("/nmap-results", methods=["GET"])
+def nmap_results_page():
+
+    return render_template(
+        "nmap_results.html",
+        nmap_results=latest_nmap_results,
+        total_ports=len(latest_nmap_results)
+    )
+
+
+# ============================================================
+# SEMGREP RESULTS
+# ============================================================
+
+@app.route("/semgrep-results", methods=["GET"])
+def semgrep_results_page():
+
+    return render_template(
+        "semgrep_results.html",
+        semgrep_results=latest_semgrep_results,
+        total_semgrep_findings=len(latest_semgrep_results)
+    )
+
+
+# ============================================================
 # SECURITY SCAN
-# =========================================================
+# ============================================================
 
 @app.route("/scan", methods=["POST"])
 def scan():
 
-    url = request.form.get(
+    global latest_nmap_results
+    global latest_semgrep_results
+
+
+    # ========================================================
+    # TARGET URL
+    # ========================================================
+
+    target_url = request.form.get(
         "url",
         ""
     ).strip()
 
 
-    # -----------------------------------------------------
-    # VALIDATE EMPTY URL
-    # -----------------------------------------------------
-
-    if not url:
+    if not target_url:
 
         return render_template(
             "index.html",
-            error="Please enter a website URL.",
-            zap_connected=check_zap_connection()
+            error="Please enter a target URL.",
+            zap_connected=False
         )
 
 
-    # -----------------------------------------------------
-    # VALIDATE URL FORMAT
-    # -----------------------------------------------------
+    # ========================================================
+    # URL VALIDATION
+    # ========================================================
 
-    if not url.startswith(
-        ("http://", "https://")
-    ):
+    parsed_url = urlparse(target_url)
+
+
+    if not parsed_url.scheme or not parsed_url.netloc:
 
         return render_template(
             "index.html",
-            error=(
-                "Please enter a complete URL starting "
-                "with http:// or https://"
-            ),
-            zap_connected=check_zap_connection()
+            error="Please enter a valid URL.",
+            zap_connected=False
         )
 
 
-    # -----------------------------------------------------
-    # EXTRACT HOST FOR NMAP
-    # -----------------------------------------------------
-
-    parsed_url = urlparse(url)
-
-    nmap_target = parsed_url.hostname
+    hostname = parsed_url.hostname
 
 
-    if not nmap_target:
+    if not hostname:
 
         return render_template(
             "index.html",
-            error="Could not identify the target host.",
-            zap_connected=check_zap_connection()
+            error="Could not determine the target host.",
+            zap_connected=False
         )
 
 
     print()
-    print("========================================")
+    print("=" * 40)
     print("TARGET INFORMATION")
-    print("========================================")
+    print("=" * 40)
 
-    print(
-        "Web Target:",
-        url
-    )
-
-    print(
-        "Nmap Target:",
-        nmap_target
-    )
+    print("Web Target:", target_url)
+    print("Nmap Target:", hostname)
 
 
-    # -----------------------------------------------------
-    # CHECK ZAP CONNECTION
-    # -----------------------------------------------------
+    # ========================================================
+    # CHECK ZAP
+    # ========================================================
 
-    if not check_zap_connection():
+    try:
+
+        zap_version = zap.core.version
+
+    except Exception as error:
+
+        print(
+            "ZAP connection failed:",
+            error
+        )
 
         return render_template(
             "index.html",
             error=(
-                "OWASP ZAP is not connected. "
-                "Please start ZAP and try again."
+                "Unable to connect to OWASP ZAP. "
+                "Make sure ZAP is running on port 8080."
             ),
             zap_connected=False
         )
 
 
+    # ========================================================
+    # OWASP ZAP SCAN
+    # ========================================================
+
+    print()
+    print("=" * 40)
+    print("STARTING OWASP ZAP SCAN")
+    print("=" * 40)
+
+
     try:
 
-        # =================================================
-        # STEP 1: OWASP ZAP
-        # =================================================
+        print("Opening target in ZAP...")
 
-        print()
-        print("========================================")
-        print("STARTING OWASP ZAP SCAN")
-        print("========================================")
-
-
-        # -------------------------------------------------
-        # OPEN TARGET
-        # -------------------------------------------------
-
-        print(
-            "Opening target in ZAP..."
-        )
-
-        zap.urlopen(url)
+        zap.urlopen(target_url)
 
         time.sleep(2)
 
 
-        # -------------------------------------------------
-        # OPEN SEARCH ENDPOINT
-        #
-        # This is only used for our local WebShield
-        # test application.
-        # -------------------------------------------------
+        # ----------------------------------------------------
+        # SEARCH ENDPOINT
+        # ----------------------------------------------------
 
-        if nmap_target in (
+        if hostname in (
             "127.0.0.1",
             "localhost"
         ):
 
             search_url = (
-                url.rstrip("/")
+                target_url.rstrip("/")
                 + "/search?query=test"
             )
 
@@ -196,43 +238,44 @@ def scan():
                 "Opening search endpoint in ZAP..."
             )
 
-            zap.urlopen(
-                search_url
-            )
+            try:
 
-            time.sleep(2)
+                zap.urlopen(search_url)
+
+                time.sleep(1)
+
+            except Exception as error:
+
+                print(
+                    "Could not open search endpoint:",
+                    error
+                )
 
 
-        # =================================================
-        # STEP 2: ZAP SPIDER
-        # =================================================
+        # ----------------------------------------------------
+        # SPIDER
+        # ----------------------------------------------------
 
         print()
-        print(
-            "Starting ZAP Spider..."
+        print("Starting ZAP Spider...")
+
+        spider_scan_id = zap.spider.scan(
+            target_url
         )
 
-        spider_id = zap.spider.scan(
-            url
-        )
 
+        while True:
 
-        while int(
-            zap.spider.status(spider_id)
-        ) < 100:
-
-            spider_status = (
+            progress = int(
                 zap.spider.status(
-                    spider_id
+                    spider_scan_id
                 )
             )
 
-            print(
-                "ZAP Spider Progress:",
-                spider_status + "%"
-            )
+            if progress >= 100:
+                break
 
-            time.sleep(2)
+            time.sleep(1)
 
 
         print(
@@ -240,9 +283,9 @@ def scan():
         )
 
 
-        # =================================================
-        # STEP 3: ZAP ACTIVE SCAN
-        # =================================================
+        # ----------------------------------------------------
+        # ACTIVE SCAN
+        # ----------------------------------------------------
 
         print()
         print(
@@ -255,18 +298,16 @@ def scan():
 
 
         active_scan_id = zap.ascan.scan(
-            url,
+            url=target_url,
+            recurse=True,
+            inscopeonly=False,
             scanpolicyname="WebShield Policy"
         )
 
 
-        while int(
-            zap.ascan.status(
-                active_scan_id
-            )
-        ) < 100:
+        while True:
 
-            active_status = (
+            progress = int(
                 zap.ascan.status(
                     active_scan_id
                 )
@@ -274,8 +315,13 @@ def scan():
 
             print(
                 "ZAP Active Scan Progress:",
-                active_status + "%"
+                str(progress) + "%"
             )
+
+
+            if progress >= 100:
+                break
+
 
             time.sleep(2)
 
@@ -285,12 +331,12 @@ def scan():
         )
 
 
-        # =================================================
-        # STEP 4: GET ZAP ALERTS
-        # =================================================
+        # ----------------------------------------------------
+        # ALERTS
+        # ----------------------------------------------------
 
         alerts = zap.core.alerts(
-            baseurl=url
+            baseurl=target_url
         )
 
 
@@ -301,191 +347,240 @@ def scan():
         )
 
 
-        # =================================================
-        # STEP 5: COUNT ZAP RISK LEVELS
-        # =================================================
-
-        high_count = 0
-        medium_count = 0
-        low_count = 0
-        info_count = 0
-
-
-        for alert in alerts:
-
-            risk = alert.get(
-                "risk",
-                ""
-            ).lower()
-
-
-            if risk == "high":
-
-                high_count += 1
-
-
-            elif risk == "medium":
-
-                medium_count += 1
-
-
-            elif risk == "low":
-
-                low_count += 1
-
-
-            else:
-
-                info_count += 1
-
-
-        # =================================================
-        # STEP 6: NMAP SCAN
-        # =================================================
-
-        print()
-        print("========================================")
-        print("STARTING NMAP SCAN")
-        print("========================================")
+    except Exception as error:
 
         print(
-            "Nmap Target:",
-            nmap_target
+            "ZAP scan failed:",
+            error
         )
 
+        alerts = []
+
+
+    # ========================================================
+    # ZAP SEVERITY
+    # ========================================================
+
+    high_count = 0
+    medium_count = 0
+    low_count = 0
+
+
+    for alert in alerts:
+
+        risk = str(
+            alert.get(
+                "risk",
+                ""
+            )
+        ).lower()
+
+
+        if risk == "high":
+
+            high_count += 1
+
+        elif risk == "medium":
+
+            medium_count += 1
+
+        elif risk == "low":
+
+            low_count += 1
+
+
+    # ========================================================
+    # NMAP
+    # ========================================================
+
+    print()
+    print("=" * 40)
+    print("STARTING NMAP SCAN")
+    print("=" * 40)
+
+    print(
+        "Nmap Target:",
+        hostname
+    )
+
+
+    try:
 
         nmap_results = run_nmap_scan(
-            nmap_target
+            hostname
+        )
+
+    except Exception as error:
+
+        print(
+            "Nmap scan failed:",
+            error
+        )
+
+        nmap_results = []
+
+
+    latest_nmap_results = nmap_results
+
+
+    print()
+    print("=" * 40)
+    print("NMAP RESULTS")
+    print("=" * 40)
+
+
+    for result in nmap_results:
+
+        print()
+        print(
+            "Host:",
+            result.get("host")
+        )
+
+        print(
+            "Port:",
+            result.get("port")
+        )
+
+        print(
+            "Protocol:",
+            result.get("protocol")
+        )
+
+        print(
+            "State:",
+            result.get("state")
+        )
+
+        print(
+            "Service:",
+            result.get("service")
+        )
+
+        print(
+            "Product:",
+            result.get("product")
+        )
+
+        print(
+            "Version:",
+            result.get("version")
+        )
+
+        print(
+            "Extra Info:",
+            result.get("extra_info")
         )
 
 
-        # =================================================
-        # STEP 7: PRINT NMAP RESULTS
-        # =================================================
+    # ========================================================
+    # SEMGREP
+    # ========================================================
+
+    print()
+    print("=" * 40)
+    print("STARTING SEMGREP SCAN")
+    print("=" * 40)
+
+
+    try:
+
+        semgrep_results = run_semgrep_scan(
+            "test_target.py"
+        )
+
+    except Exception as error:
+
+        print(
+            "Semgrep scan failed:",
+            error
+        )
+
+        semgrep_results = []
+
+
+    latest_semgrep_results = semgrep_results
+
+
+    print()
+    print("=" * 40)
+    print("SEMGREP RESULTS")
+    print("=" * 40)
+
+    print(
+        "Semgrep Findings:",
+        len(semgrep_results)
+    )
+
+
+    for finding in semgrep_results:
 
         print()
-        print("========================================")
-        print("NMAP RESULTS")
-        print("========================================")
 
+        print(
+            "Rule:",
+            finding.get("check_id")
+        )
 
-        if not nmap_results:
+        print(
+            "File:",
+            finding.get("path")
+        )
 
-            print(
-                "No Nmap results found."
-            )
+        print(
+            "Line:",
+            finding.get("start_line")
+        )
 
+        print(
+            "Severity:",
+            finding.get("severity")
+        )
 
-        else:
-
-            for result in nmap_results:
-
-                print()
-
-                print(
-                    "Host:",
-                    result["host"]
-                )
-
-                print(
-                    "Port:",
-                    result["port"]
-                )
-
-                print(
-                    "Protocol:",
-                    result["protocol"]
-                )
-
-                print(
-                    "State:",
-                    result["state"]
-                )
-
-                print(
-                    "Service:",
-                    result["service"]
-                )
-
-                print(
-                    "Product:",
-                    result["product"]
-                )
-
-                print(
-                    "Version:",
-                    result["version"]
-                )
-
-                print(
-                    "Extra Info:",
-                    result["extra_info"]
-                )
-
-
-        # =================================================
-        # STEP 8: DISPLAY WEB RESULTS
-        # =================================================
-        #
-        # Nmap is currently printed only in terminal.
-        # We will display it in scan_result.html after
-        # confirming this backend integration works.
-        # =================================================
-
-        return render_template(
-    "scan_result.html",
-
-    url=url,
-
-    zap_version=zap.core.version,
-
-    alerts=alerts,
-
-    total_alerts=len(alerts),
-
-    high_count=high_count,
-
-    medium_count=medium_count,
-
-    low_count=low_count,
-
-    info_count=info_count,
-
-    nmap_results=nmap_results,
-
-    total_ports=len(nmap_results)
-)
-
-
-    # =====================================================
-    # HANDLE SCAN ERROR
-    # =====================================================
-
-    except Exception as e:
-
-        print()
-        print("========================================")
-        print("SCAN ERROR")
-        print("========================================")
-
-        print(e)
-
-
-        return render_template(
-            "index.html",
-
-            error=(
-                "Scan failed. Make sure OWASP ZAP is running "
-                "and the target website is available."
-            ),
-
-            zap_connected=check_zap_connection()
+        print(
+            "Message:",
+            finding.get("message")
         )
 
 
-# =========================================================
-# START FLASK APPLICATION
-# =========================================================
+    # ========================================================
+    # SECURITY REPORT
+    # ========================================================
+
+    return render_template(
+
+        "scan_result.html",
+
+        url=target_url,
+
+        alerts=alerts,
+
+        total_alerts=len(alerts),
+
+        high_count=high_count,
+
+        medium_count=medium_count,
+
+        low_count=low_count,
+
+        zap_version=zap_version,
+
+        nmap_results=nmap_results,
+
+        total_ports=len(nmap_results),
+
+        semgrep_results=semgrep_results,
+
+        total_semgrep_findings=len(
+            semgrep_results
+        )
+
+    )
+
+
+# ============================================================
+# APPLICATION START
+# ============================================================
 
 if __name__ == "__main__":
 
